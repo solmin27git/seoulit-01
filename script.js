@@ -1,32 +1,46 @@
-// 연도 자동 표시
-document.getElementById('year').textContent = new Date().getFullYear();
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. 하단 푸터 올해 연도 자동 삽입
+  const yearSpan = document.getElementById("year");
+  if (yearSpan) {
+    yearSpan.textContent = new Date().getFullYear();
+  }
 
-// 다크 모드 토글 (저장 포함)
-const root = document.documentElement;
-const toggle = document.getElementById('themeToggle');
-const saved = localStorage.getItem('theme');
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const initial = saved || (prefersDark ? 'dark' : 'light');
-root.setAttribute('data-theme', initial);
-toggle.textContent = initial === 'dark' ? '☀️' : '🌙';
+  // 2. 다크 모드 전환 (Theme Toggle) 기능
+  const themeToggle = document.getElementById("themeToggle");
+  const currentTheme = localStorage.getItem("theme") || "light";
 
-toggle.addEventListener('click', () => {
-  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  root.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  toggle.textContent = next === 'dark' ? '☀️' : '🌙';
-});
+  // 기존에 저장된 테마 세팅 적용
+  document.documentElement.setAttribute("data-theme", currentTheme);
+  themeToggle.textContent = currentTheme === "dark" ? "☀️" : "🌙";
 
-// 스크롤 시 섹션 페이드인
-const io = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) {
-        e.target.classList.add('is-visible');
-        io.unobserve(e.target);
+  themeToggle.addEventListener("click", () => {
+    let theme = document.documentElement.getAttribute("data-theme");
+    if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "light");
+      localStorage.setItem("theme", "light");
+      themeToggle.textContent = "🌙";
+    } else {
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
+      themeToggle.textContent = "☀️";
+    }
+  });
+
+  // 3. 스크롤 애니메이션 (Reveal Effect)
+  const reveals = document.querySelectorAll(".reveal");
+
+  const revealOnScroll = () => {
+    const windowHeight = window.innerHeight;
+    reveals.forEach((reveal) => {
+      const elementTop = reveal.getBoundingClientRect().top;
+      const elementVisible = 100; // 등장할 타이밍 조절
+
+      if (elementTop < windowHeight - elementVisible) {
+        reveal.classList.add("active");
       }
     });
-  },
-  { threshold: 0.15 },
-);
-document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  };
+
+  window.addEventListener("scroll", revealOnScroll);
+  revealOnScroll(); // 첫 로드 시에도 한 번 실행
+});
